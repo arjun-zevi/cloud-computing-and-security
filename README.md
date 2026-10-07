@@ -1,0 +1,13 @@
+Cloud Computing and Security Lab (21CS71)
+
+1 | [Install VirtualBox / VMware Workstation with different flavours of Linux or Windows OS](01-virtualbox-installation/)
+2 | [Install a C compiler in the virtual machine and execute a simple program](02-c-program-in-vm/)
+3 | [Create an EC2 instance in AWS (Amazon)](03-ec2-instance-aws/)
+4 | [Develop a simple application using Apex (Salesforce)](04-apex-hello-world/)
+5 | [Implement a mailing service using Apex (Salesforce)](05-apex-mailing-service/)
+6 | [Simulate a cloud scenario using CloudSim and run a scheduling algorithm not present in CloudSim](06-cloudsim-sjf-scheduling/)
+7 | [Thread-based image processing application in Microsoft Azure](07-azure-image-processing/)
+8 | [Deploy a dynamic web application on an EC2 instance on AWS](08-dynamic-web-app-ec2/)
+9 | [Use Google App Engine Launcher to launch web applications](09-google-app-engine/)
+10 | [Deploy a static web application using S3 on AWS and secure it with signed URLs](10-s3-static-website-signed-url/)
+11 | [Create a video streaming service using S3 and CloudFront (with AWS Elemental MediaConvert / DRM)](11-video-streaming-s3-cloudfront/)
