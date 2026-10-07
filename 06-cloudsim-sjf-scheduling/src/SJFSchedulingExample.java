@@ -1,0 +1,131 @@
+package org.cloudbus.cloudsim.examples;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
+import org.cloudbus.cloudsim.Datacenter;
+import org.cloudbus.cloudsim.DatacenterBroker;
+import org.cloudbus.cloudsim.DatacenterCharacteristics;
+import org.cloudbus.cloudsim.Host;
+import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Pe;
+import org.cloudbus.cloudsim.Storage;
+import org.cloudbus.cloudsim.UtilizationModel;
+import org.cloudbus.cloudsim.UtilizationModelFull;
+import org.cloudbus.cloudsim.Vm;
+import org.cloudbus.cloudsim.VmAllocationPolicySimple;
+import org.cloudbus.cloudsim.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
+
+/**
+ * Shortest Job First (SJF) cloudlet scheduling in CloudSim.
+ * CloudSim submits cloudlets in the order they are given (FCFS). Here the
+ * cloudlet list is sorted by length (shortest first) before submission and the
+ * cloudlets are bound to the VMs in round-robin order. The VMs use a
+ * space-shared cloudlet scheduler, so each VM runs its queue one job at a time.
+ */
+public class SJFSchedulingExample {
+
+    public static void main(String[] args) {
+        Log.printLine("Starting SJFSchedulingExample...");
+        try {
+            int numUser = 1;
+            Calendar calendar = Calendar.getInstance();
+            boolean traceFlag = false;
+            CloudSim.init(numUser, calendar, traceFlag);
+
+            Datacenter datacenter0 = createDatacenter("Datacenter_0");
+            DatacenterBroker broker = new DatacenterBroker("Broker_0");
+            int brokerId = broker.getId();
+
+            // ---- 3 VMs ----
+            List<Vm> vmList = new ArrayList<Vm>();
+            for (int i = 0; i < 3; i++) {
+                vmList.add(new Vm(i, brokerId, 1000, 1, 512, 1000, 10000, "Xen",
+                        new CloudletSchedulerSpaceShared()));
+            }
+            broker.submitVmList(vmList);
+
+            // ---- 6 cloudlets of different lengths (in MI) ----
+            long[] lengths = {40000, 10000, 25000, 5000, 30000, 15000};
+            UtilizationModel full = new UtilizationModelFull();
+            List<Cloudlet> cloudletList = new ArrayList<Cloudlet>();
+            for (int i = 0; i < lengths.length; i++) {
+                Cloudlet c = new Cloudlet(i, lengths[i], 1, 300, 300, full, full, full);
+                c.setUserId(brokerId);
+                cloudletList.add(c);
+            }
+
+            // ---- SJF: sort by length, shortest first ----
+            Collections.sort(cloudletList, new Comparator<Cloudlet>() {
+                public int compare(Cloudlet a, Cloudlet b) {
+                    return Long.valueOf(a.getCloudletLength())
+                            .compareTo(Long.valueOf(b.getCloudletLength()));
+                }
+            });
+
+            // Bind in sorted order, round-robin over the VMs
+            for (int i = 0; i < cloudletList.size(); i++) {
+                broker.bindCloudletToVm(cloudletList.get(i).getCloudletId(),
+                        vmList.get(i % vmList.size()).getId());
+            }
+            broker.submitCloudletList(cloudletList);
+
+            CloudSim.startSimulation();
+            List<Cloudlet> received = broker.getCloudletReceivedList();
+            CloudSim.stopSimulation();
+
+            printCloudletList(received);
+            Log.printLine("SJFSchedulingExample finished!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.printLine("The simulation has been terminated due to an unexpected error");
+        }
+    }
+
+    private static Datacenter createDatacenter(String name) throws Exception {
+        List<Host> hostList = new ArrayList<Host>();
+        List<Pe> peList = new ArrayList<Pe>();
+        for (int i = 0; i < 4; i++) {
+            peList.add(new Pe(i, new PeProvisionerSimple(1000)));
+        }
+        hostList.add(new Host(0, new RamProvisionerSimple(4096),
+                new BwProvisionerSimple(10000), 1000000, peList,
+                new VmSchedulerTimeShared(peList)));
+
+        DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
+                "x86", "Linux", "Xen", hostList, 10.0, 3.0, 0.05, 0.001, 0.0);
+        return new Datacenter(name, characteristics,
+                new VmAllocationPolicySimple(hostList), new LinkedList<Storage>(), 0);
+    }
+
+    private static void printCloudletList(List<Cloudlet> list) {
+        DecimalFormat dft = new DecimalFormat("###.##");
+        String indent = "    ";
+        Log.printLine();
+        Log.printLine("========== OUTPUT ==========");
+        Log.printLine("Cloudlet ID" + indent + "STATUS" + indent + "Data center ID"
+                + indent + "VM ID" + indent + "Time" + indent + "Start Time"
+                + indent + "Finish Time");
+        for (Cloudlet c : list) {
+            Log.print(indent + c.getCloudletId() + indent + indent);
+            if (c.getCloudletStatus() == Cloudlet.SUCCESS) {
+                Log.printLine("SUCCESS" + indent + indent + c.getResourceId()
+                        + indent + indent + indent + c.getVmId()
+                        + indent + indent + dft.format(c.getActualCPUTime())
+                        + indent + indent + dft.format(c.getExecStartTime())
+                        + indent + indent + dft.format(c.getFinishTime()));
+            }
+        }
+    }
+}

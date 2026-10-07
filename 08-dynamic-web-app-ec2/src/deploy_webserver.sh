@@ -1,0 +1,25 @@
+#!/bin/bash
+# Run on the EC2 instance (Amazon Linux) via EC2 Instance Connect.
+# Security group must allow inbound SSH (22), HTTP (80) and HTTPS (443).
+sudo su -                         # become root
+yum update -y                     # update packages
+yum install -y httpd unzip wget   # install Apache web server
+
+mkdir temp && cd temp
+wget -O templatemo_596_electric_xtra.zip https://templatemo.com/download/templatemo_596_electric_xtra   # download website template
+ls -lrt
+mkdir templatemo_596_electric_xtra_unzipped
+unzip templatemo_596_electric_xtra.zip -d templatemo_596_electric_xtra_unzipped
+cd templatemo_596_electric_xtra_unzipped
+ls -lrt
+cd templatemo_596_electric_xtra
+ls -lrt
+
+mv * /var/www/html/               # copy extracted files to the web root
+cd /var/www/html/
+ls -lrt
+
+systemctl status httpd            # check status
+systemctl enable httpd            # start on every boot
+systemctl start httpd             # start the web server now
+# Then open  http://<PUBLIC-IPV4-ADDRESS>  in a browser

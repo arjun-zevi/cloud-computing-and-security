@@ -1,0 +1,8 @@
+Program 1: Install VirtualBox VMware Workstation with different flavours of Linux or Windows OS
+
+
+src/verify_installation.txt
+# Run after installation (Windows: Command Prompt in C:\Program Files\Oracle\VirtualBox)
+VBoxManage --version
+VBoxManage list ostypes
+VBoxManage list vms

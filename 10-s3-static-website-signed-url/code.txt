@@ -1,0 +1,73 @@
+CODE / COMMANDS USED - Program 10: Deploy a static web application using S3 on AWS and secure it with signed URLs
+
+
+----- src/bucket_policy_from_manual.json -----
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::BUCKET_NAME/*",
+                "arn:aws:s3:::BUCKET_NAME"
+            ]
+        }
+    ]
+}
+
+----- src/bucket_policy_public_read.json -----
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::BUCKET_NAME/*"
+    }
+  ]
+}
+
+----- src/error.html -----
+<!DOCTYPE html><html><head><title>Error</title></head>
+<body><h1>404 - Page not found</h1></body></html>
+
+----- src/generate_signed_url.py -----
+"""Create a time-limited pre-signed URL for a private S3 object.
+Usage: python generate_signed_url.py <bucket> <key> [expires_seconds]
+Needs: pip install boto3 and AWS credentials configured (aws configure)."""
+import sys
+import boto3
+from botocore.client import Config
+
+bucket, key = sys.argv[1], sys.argv[2]
+expires = int(sys.argv[3]) if len(sys.argv) > 3 else 300
+
+s3 = boto3.client("s3", config=Config(signature_version="s3v4"))
+url = s3.generate_presigned_url(
+    "get_object",
+    Params={"Bucket": bucket, "Key": key},
+    ExpiresIn=expires,
+)
+print(f"Signed URL (valid {expires}s):\n{url}")
+
+----- src/index.html -----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Static Website on AWS S3</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Hello from Amazon S3!</h1>
+  <p>This static website is hosted on S3 and served through CloudFront.</p>
+</body>
+</html>
+
+----- src/styles.css -----
+body { font-family: Arial, sans-serif; text-align: center; margin-top: 15%; background: #232f3e; color: #ff9900; }

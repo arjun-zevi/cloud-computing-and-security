@@ -1,0 +1,6 @@
+# 1. Move to the folder containing your key pair
+cd ~/Downloads
+# 2. Restrict permissions on the key (Linux/macOS; required by ssh)
+chmod 400 "YOUR_KEY.pem"
+# 3. Connect (copy the exact command from EC2 > Instance > Connect > SSH client)
+ssh -i "YOUR_KEY.pem" ec2-user@<PUBLIC-DNS-OF-INSTANCE>

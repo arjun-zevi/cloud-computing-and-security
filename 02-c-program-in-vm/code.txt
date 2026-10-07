@@ -1,0 +1,25 @@
+CODE / COMMANDS USED - Program 2: Install a C compiler in the virtual machine and execute a simple program
+
+
+----- src/first.c -----
+#include <stdio.h>
+
+int main(void)
+{
+    int a;
+    printf("Enter the number to find Even Or Not: ");
+    scanf("%d", &a);
+    if (a % 2 == 0)
+        printf("The Entered number is Even\n");
+    else
+        printf("The Entered number is Odd\n");
+    return 0;
+}
+
+----- src/run_commands.txt -----
+# Inside the Ubuntu VM (terminal)
+sudo apt update
+sudo apt install -y gcc        # install the C compiler
+gcc --version
+gcc first.c -o first           # compile
+./first                        # run

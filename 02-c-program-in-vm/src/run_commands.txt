@@ -1,0 +1,6 @@
+# Inside the Ubuntu VM (terminal)
+sudo apt update
+sudo apt install -y gcc        # install the C compiler
+gcc --version
+gcc first.c -o first           # compile
+./first                        # run

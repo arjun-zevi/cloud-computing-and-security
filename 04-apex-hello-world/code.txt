@@ -1,0 +1,12 @@
+CODE / COMMANDS USED - Program 4: Develop a simple application using Apex (Salesforce)
+
+
+----- src/HelloWorldApp.cls -----
+public class HelloWorldApp {
+    public static void sayHello() {
+        System.debug('WELCOME TO APEX PROGRAMMING');
+    }
+}
+
+----- src/run_anonymous.apex -----
+HelloWorldApp.sayHello();
